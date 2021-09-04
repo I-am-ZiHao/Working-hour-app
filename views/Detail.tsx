@@ -18,14 +18,11 @@ import useCommonStore from '../store/CommonStore';
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    // height: '100%',
-    // alignItems: 'center',
     justifyContent: 'center',
     marginTop: '10%',
   },
   text: {
     marginBottom: '5%',
-    // marginHorizontal: '5%',
     alignSelf: 'center',
   },
 });

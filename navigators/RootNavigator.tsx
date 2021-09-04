@@ -4,7 +4,6 @@ import Home from '../views/Home';
 import Detail from '../views/Detail';
 import AddItem from '../views/AddItem';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Record from '../models/Record';
 
 export type RootNavParamList = {
   Home: undefined;

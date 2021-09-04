@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import Record from '../models/Record';
-import { AddZero, getRecordDetailAsString } from '../utils/utils';
+import { getRecordDetailAsString } from '../utils/utils';
 
 const styles = StyleSheet.create({
   root: {
