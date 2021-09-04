@@ -10,10 +10,32 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
   },
+  dateTimePickerContainer: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    flexDirection: 'row',
+    marginVertical: '5%',
+  },
+  dateTimePicker: {
+    width: '70%',
+    backgroundColor: 'transparent',
+  },
+  dateTimePickerTitle: {
+    marginHorizontal: '6%',
+    color: Colors.secondary,
+  },
 });
 
 const AddItem = () => {
   const navigator = useNavigation();
+
+  const [date, setDate] = React.useState(new Date());
+
+  const onChange = (event: any, selectedDate: any) => {
+    const currentDate = selectedDate || date;
+    setDate(currentDate as Date);
+  };
 
   return (
     <>
@@ -46,6 +68,15 @@ const AddItem = () => {
       />
       <View>
         <Text>AddItem</Text>
+        {/* <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode="datetime"
+          is24Hour={true}
+          display="default"
+          onChange={onChange}
+          style={styles.dateTimePicker}
+        /> */}
       </View>
     </>
   );

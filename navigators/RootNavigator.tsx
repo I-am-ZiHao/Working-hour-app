@@ -4,12 +4,11 @@ import Home from '../views/Home';
 import Detail from '../views/Detail';
 import AddItem from '../views/AddItem';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Colors from '../constants/colors';
-import DefaultStyles from '../constants/default-styles';
+import Record from '../models/Record';
 
 export type RootNavParamList = {
   Home: undefined;
-  Detail: undefined;
+  Detail: { record_id: string };
   AddItem: undefined;
 };
 

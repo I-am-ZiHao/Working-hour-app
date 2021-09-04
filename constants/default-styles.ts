@@ -17,6 +17,10 @@ const DefaultStyles = StyleSheet.create({
     fontFamily: 'open-sans-bold',
     fontSize: 70,
   },
+  smallCardText: {
+    fontFamily: 'open-sans-bold',
+    fontSize: 25,
+  },
   heading: {
     color: 'white',
     fontSize: 22,

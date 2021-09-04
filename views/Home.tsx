@@ -6,32 +6,22 @@ import {
   Text,
   Button,
   Modal,
+  ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import Record from '../models/Record';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import MainCard from '../components/MainCard';
 import { Header as HeaderRNE, Icon } from 'react-native-elements';
 import { SelectorItemType } from '../common/type';
 import Selector from '../components/Selector';
+import { WorkingHoursSummation } from '../utils/utils';
+import SmallCard from '../components/SmallCard';
+import useCommonStore from '../store/CommonStore';
 
 const styles = StyleSheet.create({
-  dateTimePickerContainer: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    flexDirection: 'row',
-    marginVertical: '5%',
-  },
-  dateTimePicker: {
-    width: '70%',
-    backgroundColor: 'transparent',
-  },
-  dateTimePickerTitle: {
-    marginHorizontal: '6%',
-    color: Colors.secondary,
-  },
   cardContainer: {
     flexDirection: 'row',
     width: '100%',
@@ -73,20 +63,24 @@ const styles = StyleSheet.create({
   finishBtn: {
     marginTop: '5%',
   },
+  listContainer: {
+    marginTop: '5%',
+  },
 });
 
 const Home = () => {
   const navigator = useNavigation();
 
+  const setAllRecods = useCommonStore().setAllRecords;
+
   const TODAY = new Date();
-  const [date, setDate] = React.useState(TODAY);
-  const [selectedMonth, setSelectedMonth] = React.useState(TODAY.getMonth());
+  const [selectedMonth, setSelectedMonth] = React.useState(
+    TODAY.getMonth() + 1
+  );
   const [openModal, setOpenModal] = React.useState(false);
 
-  const onChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || date;
-    setDate(currentDate as Date);
-  };
+  const [totalWorkingHours, setTotalWorkingHours] = React.useState<number>();
+  const [totalOverHours, setTotalOverHours] = React.useState<number>();
 
   const createMonthItem = () => {
     let output: SelectorItemType[] = [];
@@ -105,6 +99,125 @@ const Home = () => {
   const onModalClose = () => {
     setOpenModal(false);
   };
+
+  const fakeData: Record[] = [
+    new Record(
+      1,
+      new Date(),
+      10,
+      10,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      2,
+      new Date(),
+      11,
+      11,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      3,
+      new Date(),
+      13.6,
+      13.6,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      4,
+      new Date(),
+      15.1,
+      15.1,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      5,
+      new Date(),
+      8,
+      8,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      6,
+      new Date(),
+      3.5,
+      3.5,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      7,
+      new Date(),
+      6.7,
+      6.7,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      8,
+      new Date(),
+      9,
+      9,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      9,
+      new Date(),
+      10.2,
+      10.2,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+    new Record(
+      10,
+      new Date(),
+      2,
+      2,
+      new Date(),
+      new Date(),
+      new Date(),
+      new Date(),
+      ''
+    ),
+  ];
+
+  React.useEffect(() => {
+    setTotalWorkingHours(WorkingHoursSummation(fakeData, 'work'));
+    setTotalOverHours(WorkingHoursSummation(fakeData, 'over'));
+    setAllRecods(fakeData);
+  }, []);
 
   return (
     <>
@@ -128,14 +241,14 @@ const Home = () => {
         }
         centerComponent={{ text: '工時紀錄', style: DefaultStyles.heading }}
       />
-      <View>
+      <SafeAreaView>
         <View style={styles.cardContainer}>
           <MainCard
             title={selectedMonth.toString() + '月工時'}
-            mainContent={69}
+            mainContent={totalWorkingHours ?? 0}
             onPress={onModalOpen}
           />
-          <MainCard title="已加班" mainContent={32} />
+          <MainCard title="已加班" mainContent={totalOverHours ?? 0} />
         </View>
         <Modal
           animationType="fade"
@@ -158,22 +271,20 @@ const Home = () => {
             </View>
           </View>
         </Modal>
-        {/* <DateTimePicker
-          testID="dateTimePicker"
-          value={date}
-          mode="datetime"
-          is24Hour={true}
-          display="default"
-          onChange={onChange}
-          style={styles.dateTimePicker}
-        /> */}
-        <Button
-          title="Detail"
-          onPress={() => {
-            navigator.navigate('Detail');
-          }}
-        />
-      </View>
+        <ScrollView style={styles.listContainer}>
+          {fakeData.map((record) => (
+            <SmallCard
+              key={record.id}
+              record={record}
+              onPress={() => {
+                navigator.navigate('Detail', {
+                  record_id: record.id,
+                });
+              }}
+            />
+          ))}
+        </ScrollView>
+      </SafeAreaView>
     </>
   );
 };

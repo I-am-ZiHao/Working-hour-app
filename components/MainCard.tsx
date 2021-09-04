@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 
@@ -34,7 +34,7 @@ export type MainCardProps = {
 const MainCard = ({ title, mainContent, onPress }: MainCardProps) => {
   return (
     <View style={styles.container}>
-      <Pressable onPress={onPress}>
+      <TouchableOpacity onPress={onPress}>
         <Text style={{ ...styles.title, ...DefaultStyles.cardText }}>
           {title}
         </Text>
@@ -46,7 +46,7 @@ const MainCard = ({ title, mainContent, onPress }: MainCardProps) => {
             小時
           </Text>
         </View>
-      </Pressable>
+      </TouchableOpacity>
     </View>
   );
 };
