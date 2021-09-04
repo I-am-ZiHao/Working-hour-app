@@ -5,7 +5,7 @@ import Detail from '../views/Detail';
 import AddItem from '../views/AddItem';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Colors from '../constants/colors';
-import GoBackBtn from '../components/GoBackBtn';
+import DefaultStyles from '../constants/default-styles';
 
 export type RootNavParamList = {
   Home: undefined;
@@ -13,45 +13,19 @@ export type RootNavParamList = {
   AddItem: undefined;
 };
 
-// const Stack = createNativeStackNavigator<RootNavParamList>();
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootNavParamList>();
 
 const RootNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: {
-            backgroundColor: Colors.primary,
-          },
-          headerTintColor: 'white',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            fontSize: 25,
-          },
+          headerShown: false,
         }}
       >
-        <Stack.Screen
-          name="Home"
-          component={Home}
-          options={{ title: '工時紀錄' }}
-        />
-        <Stack.Screen
-          name="Detail"
-          component={Detail}
-          // options={{
-          //   headerLeft: () => <GoBackBtn />,
-          // }}
-        />
-        <Stack.Screen
-          name="AddItem"
-          component={AddItem}
-          options={{
-            title: '新增工時',
-            // headerTintColor: 'white',
-            // headerLeft: () => <GoBackBtn />,
-          }}
-        />
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Detail" component={Detail} />
+        <Stack.Screen name="AddItem" component={AddItem} />
       </Stack.Navigator>
     </NavigationContainer>
   );
