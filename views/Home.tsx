@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
 const Home = () => {
   const navigator = useNavigation();
 
+  const allRecords = useCommonStore().allRecords;
   const setAllRecods = useCommonStore().setAllRecords;
 
   const TODAY = new Date();
@@ -272,7 +273,7 @@ const Home = () => {
           </View>
         </Modal>
         <ScrollView style={styles.listContainer}>
-          {fakeData.map((record) => (
+          {allRecords.map((record) => (
             <SmallCard
               key={record.id}
               record={record}
