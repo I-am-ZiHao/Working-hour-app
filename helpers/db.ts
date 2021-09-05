@@ -37,7 +37,6 @@ export const dbInit = () => {
   return promise;
 };
 
-// need to check if same date exist
 export const dbInsertRecord = ({
   month,
   date,
@@ -65,6 +64,26 @@ export const dbInsertRecord = ({
         },
         (_, err) => {
           console.log('fail in insert');
+          reject(err);
+          return false;
+        }
+      );
+    });
+  });
+  return promise;
+};
+
+export const dbDeleteRecord = (record_id: number) => {
+  const promise = new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'DELETE FROM work WHERE id = ?',
+        [record_id],
+        (_, result) => {
+          resolve(result);
+        },
+        (_, err) => {
+          console.log('fail in delete');
           reject(err);
           return false;
         }

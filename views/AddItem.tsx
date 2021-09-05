@@ -21,7 +21,7 @@ import Record from '../models/Record';
 import { dbInsertRecord } from '../helpers/db';
 
 const styles = StyleSheet.create({
-  save: {
+  headerRightText: {
     color: 'white',
     fontSize: 18,
   },
@@ -188,7 +188,7 @@ const AddItem = () => {
         rightComponent={
           <View style={DefaultStyles.headerRight}>
             <TouchableOpacity onPress={onSaveHandler}>
-              <Text style={styles.save}>Save</Text>
+              <Text style={styles.headerRightText}>Save</Text>
             </TouchableOpacity>
           </View>
         }
