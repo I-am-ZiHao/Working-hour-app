@@ -1,3 +1,4 @@
+import { WORKING_HOUR_LIMIT } from '../constants/constants';
 import Record from '../models/Record';
 
 export const WorkingHoursSummation = (
@@ -47,4 +48,22 @@ export const getRecordDetailAsString = (record: Record) => {
     endBreakHour,
     endBreakMinute,
   };
+};
+
+export const FirstDateIsOverSecondDate = (first: Date, second: Date) => {
+  if (first.getTime() >= second.getTime()) return true;
+  return false;
+};
+
+export const TotalHours = (first: Date, second: Date) => {
+  let totalTime = second.getTime() - first.getTime();
+  return totalTime / (1000 * 60 * 60);
+};
+
+export const OverHours = (totalWork: number) => {
+  return totalWork > WORKING_HOUR_LIMIT ? totalWork - WORKING_HOUR_LIMIT : 0;
+};
+
+export const RoundNumber = (time: number) => {
+  return Math.round(time * 100) / 100;
 };

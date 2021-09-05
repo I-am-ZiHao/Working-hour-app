@@ -17,9 +17,10 @@ import MainCard from '../components/MainCard';
 import { Header as HeaderRNE, Icon } from 'react-native-elements';
 import { SelectorItemType } from '../common/type';
 import Selector from '../components/Selector';
-import { WorkingHoursSummation } from '../utils/utils';
+import { WorkingHoursSummation, TotalHours, OverHours } from '../utils/utils';
 import SmallCard from '../components/SmallCard';
 import useCommonStore from '../store/CommonStore';
+import { dbFetchRecord } from '../helpers/db';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -72,7 +73,7 @@ const Home = () => {
   const navigator = useNavigation();
 
   const allRecords = useCommonStore().allRecords;
-  const setAllRecods = useCommonStore().setAllRecords;
+  const setAllRecords = useCommonStore().setAllRecords;
 
   const TODAY = new Date();
   const [selectedMonth, setSelectedMonth] = React.useState(
@@ -101,124 +102,41 @@ const Home = () => {
     setOpenModal(false);
   };
 
-  const fakeData: Record[] = [
-    new Record(
-      1,
-      new Date(),
-      10,
-      10,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      2,
-      new Date(),
-      11,
-      11,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      3,
-      new Date(),
-      13.6,
-      13.6,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      4,
-      new Date(),
-      15.1,
-      15.1,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      5,
-      new Date(),
-      8,
-      8,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      6,
-      new Date(),
-      3.5,
-      3.5,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      7,
-      new Date(),
-      6.7,
-      6.7,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      8,
-      new Date(),
-      9,
-      9,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      9,
-      new Date(),
-      10.2,
-      10.2,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-    new Record(
-      10,
-      new Date(),
-      2,
-      2,
-      new Date(),
-      new Date(),
-      new Date(),
-      new Date(),
-      ''
-    ),
-  ];
+  const loadDataFromDB = React.useCallback(async () => {
+    const dbFetchResult = await dbFetchRecord(selectedMonth);
+    setAllRecords(
+      (dbFetchResult as any).rows._array.map((record) => {
+        const startBreakTime = new Date(record.startbreaktime as number);
+        const endBreakTime = new Date(record.endbreaktime as number);
+        const startWorkTime = new Date(record.startworktime as number);
+        const endWorkTime = new Date(record.endworktime as number);
+        const totalBreakHr = TotalHours(startBreakTime, endBreakTime);
+        const totalWorkHr =
+          TotalHours(startWorkTime, endWorkTime) - totalBreakHr;
+        const overWorkHr = OverHours(totalWorkHr);
+        return new Record(
+          record.id,
+          new Date(record.date as number),
+          totalWorkHr,
+          overWorkHr,
+          startWorkTime,
+          endWorkTime,
+          startBreakTime,
+          endBreakTime,
+          record.imageUri
+        );
+      })
+    );
+  }, [selectedMonth]);
 
   React.useEffect(() => {
-    setTotalWorkingHours(WorkingHoursSummation(fakeData, 'work'));
-    setTotalOverHours(WorkingHoursSummation(fakeData, 'over'));
-    setAllRecods(fakeData);
-  }, []);
+    loadDataFromDB();
+  }, [loadDataFromDB]);
+
+  React.useEffect(() => {
+    setTotalWorkingHours(WorkingHoursSummation(allRecords, 'work'));
+    setTotalOverHours(WorkingHoursSummation(allRecords, 'over'));
+  }, [allRecords]);
 
   return (
     <>
@@ -273,17 +191,19 @@ const Home = () => {
           </View>
         </Modal>
         <ScrollView style={styles.listContainer}>
-          {allRecords.map((record) => (
-            <SmallCard
-              key={record.id}
-              record={record}
-              onPress={() => {
-                navigator.navigate('Detail', {
-                  record_id: record.id,
-                });
-              }}
-            />
-          ))}
+          {allRecords
+            .sort((a, b) => (a.date < b.date ? 1 : -1))
+            .map((record) => (
+              <SmallCard
+                key={record.id}
+                record={record}
+                onPress={() => {
+                  navigator.navigate('Detail', {
+                    record_id: record.id,
+                  });
+                }}
+              />
+            ))}
         </ScrollView>
       </SafeAreaView>
     </>

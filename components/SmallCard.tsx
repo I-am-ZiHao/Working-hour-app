@@ -8,7 +8,7 @@ import { getRecordDetailAsString } from '../utils/utils';
 const styles = StyleSheet.create({
   root: {
     width: '90%',
-    height: '10%',
+    height: 50,
     borderColor: Colors.primary3,
     borderWidth: 2,
     alignSelf: 'center',

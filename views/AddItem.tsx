@@ -11,6 +11,14 @@ import { Header as HeaderRNE, Icon, CheckBox } from 'react-native-elements';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {
+  FirstDateIsOverSecondDate,
+  OverHours,
+  TotalHours,
+} from '../utils/utils';
+import useCommonStore from '../store/CommonStore';
+import Record from '../models/Record';
+import { dbInsertRecord } from '../helpers/db';
 
 const styles = StyleSheet.create({
   save: {
@@ -64,10 +72,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 30,
   },
+  warning: {
+    color: 'red',
+    marginLeft: '5%',
+  },
 });
 
 const AddItem = () => {
   const navigator = useNavigation();
+
+  const currentRecords = useCommonStore().allRecords;
+  const setAllRecords = useCommonStore().setAllRecords;
 
   const TODAY = new Date();
   const [date, setDate] = React.useState(TODAY);
@@ -76,6 +91,7 @@ const AddItem = () => {
   const [startBreakTime, setStartBreakTime] = React.useState(TODAY);
   const [endBreakTime, setEndBreakTime] = React.useState(TODAY);
   const [hasBreakTime, setHasBreakTime] = React.useState(false);
+  const [warning, setWarning] = React.useState<string>();
 
   const onDateChange = (event: any, selectedDate: any) => {
     const currentDate = selectedDate || date;
@@ -102,8 +118,50 @@ const AddItem = () => {
     setEndBreakTime(currentDate as Date);
   };
 
-  const onSaveHandler = () => {
-    // check date and show warning
+  const onSaveHandler = async () => {
+    if (FirstDateIsOverSecondDate(startWorkTime, endWorkTime)) {
+      setWarning('工作時間輸入有誤');
+      return;
+    }
+    if (
+      hasBreakTime &&
+      FirstDateIsOverSecondDate(startBreakTime, endBreakTime)
+    ) {
+      setWarning('休息時間輸入有誤');
+      return;
+    }
+    const totalBreakHr = hasBreakTime
+      ? TotalHours(startBreakTime, endBreakTime)
+      : 0;
+    const totalWorkHr = TotalHours(startWorkTime, endWorkTime) - totalBreakHr;
+    const overWorkHr = OverHours(totalWorkHr);
+
+    const imageUri = ''; // need to modify
+    const dbInsertResult = await dbInsertRecord({
+      month: date.getMonth() + 1,
+      date: date.getTime(),
+      startWorkTime: startWorkTime.getTime(),
+      endWorkTime: endWorkTime.getTime(),
+      startBreakTime: hasBreakTime ? startBreakTime.getTime() : 0,
+      endBreakTime: hasBreakTime ? endBreakTime.getTime() : 0,
+      imageUri,
+    });
+
+    setAllRecords([
+      new Record(
+        (dbInsertResult as any).insertId,
+        date,
+        totalWorkHr,
+        overWorkHr,
+        startWorkTime,
+        endWorkTime,
+        startBreakTime,
+        endBreakTime,
+        '' // uri
+      ),
+      ...currentRecords,
+    ]);
+    setWarning(undefined);
     navigator.goBack();
   };
 
@@ -137,6 +195,11 @@ const AddItem = () => {
         centerComponent={{ text: '新增工時', style: DefaultStyles.heading }}
       />
       <SafeAreaView style={styles.root}>
+        {warning && (
+          <View style={styles.container}>
+            <Text style={styles.warning}>* {warning}</Text>
+          </View>
+        )}
         <View style={styles.container}>
           <Text style={{ ...styles.label, ...DefaultStyles.bodyText }}>
             選擇日期

@@ -1,8 +1,9 @@
 import AppLoading from 'expo-app-loading';
 import * as Font from 'expo-font';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import RootNavigator from './navigators/RootNavigator';
+import { dbInit } from './helpers/db';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -13,6 +14,17 @@ const fetchFonts = () => {
 
 export default function App() {
   const [isReady, setIsReady] = React.useState(false);
+
+  React.useEffect(() => {
+    dbInit()
+      .then(() => {
+        console.log('successfully initialized db');
+      })
+      .catch((err) => {
+        console.log('init db failed.');
+        throw err;
+      });
+  }, []);
 
   if (!isReady) {
     return (

@@ -12,7 +12,7 @@ import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootNavParamList } from '../navigators/RootNavigator';
-import { getRecordDetailAsString } from '../utils/utils';
+import { getRecordDetailAsString, RoundNumber } from '../utils/utils';
 import useCommonStore from '../store/CommonStore';
 
 const styles = StyleSheet.create({
@@ -52,6 +52,10 @@ const Detail = ({ route, navigation }: DetailProps) => {
     endBreakMinute,
   } = getRecordDetailAsString(record);
 
+  const startBreak = startBreakHour + ':' + startBreakMinute;
+
+  const endBreak = endBreakHour + ':' + endBreakMinute;
+
   return (
     <>
       <HeaderRNE
@@ -88,24 +92,20 @@ const Detail = ({ route, navigation }: DetailProps) => {
             ':' +
             endWorkMinute}
         </Text>
-        <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-          午休時間{'     '}
-          {startBreakHour +
-            ':' +
-            startBreakMinute +
-            ' ~ ' +
-            endBreakHour +
-            ':' +
-            endBreakMinute}
-        </Text>
+        {startBreak !== endBreak && (
+          <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+            午休時間{'     '}
+            {startBreak + ' ~ ' + endBreak}
+          </Text>
+        )}
         <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
           總工時{'     '}
-          {record.totalWorkHours}
+          {RoundNumber(record.totalWorkHours)}
           {'     '}小時
         </Text>
         <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
           加班{'     '}
-          {record.overWorkHours}
+          {RoundNumber(record.overWorkHours)}
           {'     '}小時
         </Text>
       </SafeAreaView>
