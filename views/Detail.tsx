@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Modal,
   Button,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Header as HeaderRNE, Icon } from 'react-native-elements';
@@ -19,18 +20,21 @@ import useCommonStore from '../store/CommonStore';
 import { dbDeleteRecord } from '../helpers/db';
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    justifyContent: 'center',
-    marginTop: '10%',
-  },
-  text: {
-    marginBottom: '5%',
-    alignSelf: 'center',
-  },
   headerRightText: {
     color: 'white',
     fontSize: 18,
+  },
+  container: {
+    width: '100%',
+    marginTop: '5%',
+    height: '100%',
+  },
+  listContainer: {
+    width: '100%',
+  },
+  text: {
+    marginBottom: '2%',
+    alignSelf: 'center',
   },
   centeredView: {
     flex: 1,
@@ -63,12 +67,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: '20%',
   },
-  comfirmText: {},
   finishBtn: {
     width: '80%',
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
+  imgPreviewContainer: {
+    height: '60%',
+    width: '90%',
+    marginVertical: '5%',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  img: { width: '100%', height: '100%' },
 });
 
 type DetailProps = NativeStackScreenProps<RootNavParamList, 'Detail'>;
@@ -174,32 +188,41 @@ const Detail = ({ route, navigation }: DetailProps) => {
             </View>
           </Modal>
         )}
-        <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-          工作時間{'     '}
-          {startWorkHour +
-            ':' +
-            startWorkMinute +
-            ' ~ ' +
-            endWorkHour +
-            ':' +
-            endWorkMinute}
-        </Text>
-        {startBreak !== endBreak && (
+        <View style={styles.listContainer}>
           <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-            午休時間{'     '}
-            {startBreak + ' ~ ' + endBreak}
+            工作時間{'     '}
+            {startWorkHour +
+              ':' +
+              startWorkMinute +
+              ' ~ ' +
+              endWorkHour +
+              ':' +
+              endWorkMinute}
           </Text>
-        )}
-        <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-          總工時{'     '}
-          {RoundNumber(record.totalWorkHours)}
-          {'     '}小時
-        </Text>
-        <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-          加班{'     '}
-          {RoundNumber(record.overWorkHours)}
-          {'     '}小時
-        </Text>
+          {startBreak !== endBreak && (
+            <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+              午休時間{'     '}
+              {startBreak + ' ~ ' + endBreak}
+            </Text>
+          )}
+          <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+            總工時{'     '}
+            {RoundNumber(record.totalWorkHours)}
+            {'     '}小時
+          </Text>
+          <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+            加班{'     '}
+            {RoundNumber(record.overWorkHours)}
+            {'     '}小時
+          </Text>
+        </View>
+        <View style={styles.imgPreviewContainer}>
+          {record.imageUri === '' ? (
+            <Text style={DefaultStyles.bodyText}>未拍攝照片</Text>
+          ) : (
+            <Image style={styles.img} source={{ uri: record.imageUri }} />
+          )}
+        </View>
       </SafeAreaView>
     </>
   );

@@ -74,11 +74,9 @@ const Home = () => {
 
   const allRecords = useCommonStore().allRecords;
   const setAllRecords = useCommonStore().setAllRecords;
+  const selectedMonth = useCommonStore().selectMonth;
+  const setSelectedMonth = useCommonStore().setSelectMonth;
 
-  const TODAY = new Date();
-  const [selectedMonth, setSelectedMonth] = React.useState(
-    TODAY.getMonth() + 1
-  );
   const [openModal, setOpenModal] = React.useState(false);
 
   const [totalWorkingHours, setTotalWorkingHours] = React.useState<number>();
