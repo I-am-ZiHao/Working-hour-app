@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 const DefaultStyles = StyleSheet.create({
   bodyText: {
     fontFamily: 'open-sans',
-    fontSize: 20,
+    fontSize: 18,
   },
   cardText: {
     fontFamily: 'open-sans-bold',
