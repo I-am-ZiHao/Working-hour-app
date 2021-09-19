@@ -5,19 +5,15 @@ import {
   View,
   Text,
   SafeAreaView,
-  Modal,
-  Button,
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Header as HeaderRNE, Icon } from 'react-native-elements';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootNavParamList } from '../navigators/RootNavigator';
 import { getRecordDetailAsString, RoundNumber } from '../utils/utils';
 import useCommonStore from '../store/CommonStore';
-import { dbDeleteRecord } from '../helpers/db';
+import Record from '../models/Record';
 
 const styles = StyleSheet.create({
   headerRightText: {
@@ -31,10 +27,25 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     width: '100%',
+    alignItems: 'flex-start',
+    paddingLeft: '10%',
+  },
+  rowContainer: {
+    flexDirection: 'row',
+  },
+  labelContainer: {
+    width: '30%',
+    marginRight: '10%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  contentTextContainer: {
+    width: '15%',
+    marginRight: '8%',
+    flexDirection: 'row',
   },
   text: {
     marginBottom: '2%',
-    alignSelf: 'center',
   },
   centeredView: {
     flex: 1,
@@ -85,18 +96,11 @@ const styles = StyleSheet.create({
   img: { width: '100%', height: '100%' },
 });
 
-type DetailProps = NativeStackScreenProps<RootNavParamList, 'Detail'>;
-
-const Detail = ({ route, navigation }: DetailProps) => {
+const Detail = () => {
   const navigator = useNavigation();
 
-  const allRecords = useCommonStore().allRecords;
-  const setAllRecords = useCommonStore().setAllRecords;
+  const selectedRecord = useCommonStore().selectRecord as Record;
 
-  const [openModal, setOpenModal] = React.useState(false);
-
-  const { record_id } = route.params;
-  const record = allRecords.filter((d) => d.id === record_id)[0];
   const {
     date,
     year,
@@ -110,30 +114,10 @@ const Detail = ({ route, navigation }: DetailProps) => {
     startBreakMinute,
     endBreakHour,
     endBreakMinute,
-  } = getRecordDetailAsString(record);
+  } = getRecordDetailAsString(selectedRecord);
 
   const startBreak = startBreakHour + ':' + startBreakMinute;
   const endBreak = endBreakHour + ':' + endBreakMinute;
-
-  const onModalOpen = () => {
-    setOpenModal(true);
-  };
-
-  const onModalClose = () => {
-    setOpenModal(false);
-  };
-
-  const onDeleteHandler = async () => {
-    navigator.goBack(); // 先回去，不然re-render會找不到record
-    let mounted = true;
-    await dbDeleteRecord(parseInt(record_id)).then(() => {
-      if (mounted) {
-        setAllRecords(allRecords.filter((record) => record.id !== record_id));
-        setOpenModal(false);
-      }
-    });
-    return () => (mounted = false);
-  };
 
   return (
     <>
@@ -157,8 +141,12 @@ const Detail = ({ route, navigation }: DetailProps) => {
         }
         rightComponent={
           <View style={DefaultStyles.headerRight}>
-            <TouchableOpacity onPress={onModalOpen}>
-              <Text style={styles.headerRightText}>Delete</Text>
+            <TouchableOpacity
+              onPress={() => {
+                navigator.navigate('ModifyItem');
+              }}
+            >
+              <Text style={styles.headerRightText}>修改</Text>
             </TouchableOpacity>
           </View>
         }
@@ -168,61 +156,74 @@ const Detail = ({ route, navigation }: DetailProps) => {
         }}
       />
       <SafeAreaView style={styles.container}>
-        {openModal && (
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={openModal}
-            onRequestClose={onModalClose}
-          >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <View style={styles.comfirmTextContainer}>
-                  <Text style={DefaultStyles.bodyText}>確定刪除？</Text>
+        {selectedRecord && (
+          <>
+            <View style={styles.listContainer}>
+              <View style={styles.rowContainer}>
+                <View style={styles.labelContainer}>
+                  <Text style={DefaultStyles.bodyText}>工作時間</Text>
                 </View>
-                <View style={styles.finishBtn}>
-                  <Button title="確認" onPress={onDeleteHandler} />
-                  <Button title="取消" onPress={onModalClose} />
+                <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+                  {startWorkHour +
+                    ':' +
+                    startWorkMinute +
+                    ' ~ ' +
+                    endWorkHour +
+                    ':' +
+                    endWorkMinute}
+                </Text>
+              </View>
+              {selectedRecord.hasBreakTime && (
+                <View style={styles.rowContainer}>
+                  <View style={styles.labelContainer}>
+                    <Text style={DefaultStyles.bodyText}>午休時間</Text>
+                  </View>
+                  <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+                    {startBreak + ' ~ ' + endBreak}
+                  </Text>
                 </View>
+              )}
+              <View style={styles.rowContainer}>
+                <View style={styles.labelContainer}>
+                  <Text style={DefaultStyles.bodyText}>總工時</Text>
+                </View>
+                <View style={styles.contentTextContainer}>
+                  <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+                    {RoundNumber(selectedRecord.totalWorkHours)}
+                  </Text>
+                </View>
+                <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+                  小時
+                </Text>
+              </View>
+              <View style={styles.rowContainer}>
+                <View style={styles.labelContainer}>
+                  <Text style={DefaultStyles.bodyText}>加班</Text>
+                </View>
+                <View style={styles.contentTextContainer}>
+                  <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+                    {RoundNumber(selectedRecord.overWorkHours)}
+                  </Text>
+                </View>
+                <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
+                  小時
+                </Text>
               </View>
             </View>
-          </Modal>
+            <View style={styles.imgPreviewContainer}>
+              {selectedRecord.imageUri === '' ? (
+                <Text style={DefaultStyles.bodyText}>未拍攝照片</Text>
+              ) : (
+                <Image
+                  style={styles.img}
+                  defaultSource={require('../assets/image-not-found.png')}
+                  resizeMode="cover"
+                  source={{ uri: selectedRecord.imageUri }}
+                />
+              )}
+            </View>
+          </>
         )}
-        <View style={styles.listContainer}>
-          <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-            工作時間{'     '}
-            {startWorkHour +
-              ':' +
-              startWorkMinute +
-              ' ~ ' +
-              endWorkHour +
-              ':' +
-              endWorkMinute}
-          </Text>
-          {startBreak !== endBreak && (
-            <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-              午休時間{'     '}
-              {startBreak + ' ~ ' + endBreak}
-            </Text>
-          )}
-          <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-            總工時{'     '}
-            {RoundNumber(record.totalWorkHours)}
-            {'     '}小時
-          </Text>
-          <Text style={{ ...styles.text, ...DefaultStyles.bodyText }}>
-            加班{'     '}
-            {RoundNumber(record.overWorkHours)}
-            {'     '}小時
-          </Text>
-        </View>
-        <View style={styles.imgPreviewContainer}>
-          {record.imageUri === '' ? (
-            <Text style={DefaultStyles.bodyText}>未拍攝照片</Text>
-          ) : (
-            <Image style={styles.img} source={{ uri: record.imageUri }} />
-          )}
-        </View>
       </SafeAreaView>
     </>
   );

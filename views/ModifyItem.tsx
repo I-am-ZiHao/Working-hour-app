@@ -7,18 +7,30 @@ import {
   ScrollView,
   Alert,
   Image,
+  Button,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Header as HeaderRNE, Icon, CheckBox } from 'react-native-elements';
+import {
+  Header as HeaderRNE,
+  Icon,
+  CheckBox,
+  Overlay,
+} from 'react-native-elements';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FirstDateIsOverSecondDate } from '../utils/utils';
+import {
+  FirstDateIsOverSecondDate,
+  OverHours,
+  TotalHours,
+} from '../utils/utils';
 import useCommonStore from '../store/CommonStore';
+import Record from '../models/Record';
 import CameraView from '../components/Camera';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import useRecord from '../helpers/useRecord';
+import { getRecordDetailAsString } from '../utils/utils';
 
 const styles = StyleSheet.create({
   headerRightText: {
@@ -58,11 +70,11 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     marginLeft: '5%',
   },
-  cameraBtnContainer: {
-    width: '100%',
+  btnContainer: {
+    width: '60%',
     height: 60,
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     marginVertical: '10%',
   },
   cameraBtn: {
@@ -71,6 +83,14 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 30,
+  },
+  deleteBtn: {
+    backgroundColor: '#ff9999',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 60,
+    height: '100%',
     borderRadius: 30,
   },
   warning: {
@@ -91,51 +111,76 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  overlay: {
+    width: '70%',
+    height: '20%',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  confirmDelete: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginVertical: '5%',
+  },
+  btnGroup: {
+    width: '60%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: '5%',
+  },
 });
 
-const AddItem = () => {
+export const ModifyItem = React.memo(() => {
   const navigator = useNavigation();
 
-  const selectedMonth = useCommonStore().selectMonth;
+  const { updateRecordHandler, deleteRecordHandler } = useRecord();
 
-  const { addRecordHandler } = useRecord();
+  const selectedRecord = useCommonStore().selectRecord as Record;
+  const setSelectedRecord = useCommonStore().setSelectRecord;
 
-  const TODAY = new Date();
-  const [date, setDate] = React.useState(
-    new Date(TODAY.getFullYear(), selectedMonth - 1, TODAY.getDate())
+  const [startWorkTime, setStartWorkTime] = React.useState(
+    selectedRecord.startWorkTime
   );
-  const [startWorkTime, setStartWorkTime] = React.useState(TODAY);
-  const [endWorkTime, setEndWorkTime] = React.useState(TODAY);
-  const [startBreakTime, setStartBreakTime] = React.useState(TODAY);
-  const [endBreakTime, setEndBreakTime] = React.useState(TODAY);
-  const [hasBreakTime, setHasBreakTime] = React.useState(false);
+  const [endWorkTime, setEndWorkTime] = React.useState(
+    selectedRecord.endWorkTime
+  );
+  const [hasBreakTime, setHasBreakTime] = React.useState(
+    selectedRecord.hasBreakTime
+  );
+  const [startBreakTime, setStartBreakTime] = React.useState(
+    hasBreakTime ? selectedRecord.startBreakTime : new Date()
+  );
+  const [endBreakTime, setEndBreakTime] = React.useState(
+    hasBreakTime ? selectedRecord.endBreakTime : new Date()
+  );
+
   const [warning, setWarning] = React.useState<string>();
   const [openCamera, setOpenCamera] = React.useState(false);
   const [takenPhoto, setTakenPhoto] = React.useState<MediaLibrary.Asset>();
-
-  const onDateChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || date;
-    setDate(currentDate as Date);
-  };
+  const [openModal, setOpenModal] = React.useState(false);
 
   const onStartWorkTimeChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || date;
+    const currentDate = selectedDate || new Date();
     setStartWorkTime(currentDate as Date);
   };
 
   const onEndWorkTimeChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || date;
+    const currentDate = selectedDate || new Date();
     setEndWorkTime(currentDate as Date);
   };
 
   const onStartBreakTimeChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || date;
+    const currentDate = selectedDate || new Date();
     setStartBreakTime(currentDate as Date);
   };
 
   const onEndBreakTimeChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || date;
+    const currentDate = selectedDate || new Date();
     setEndBreakTime(currentDate as Date);
+  };
+
+  const toggleOverlay = () => {
+    setOpenModal((prev) => !prev);
   };
 
   const verifyPermissions = async () => {
@@ -179,21 +224,54 @@ const AddItem = () => {
       setWarning('休息時間輸入有誤');
       return;
     }
+    const totalBreakHr = hasBreakTime
+      ? TotalHours(startBreakTime, endBreakTime)
+      : 0;
+    const totalWorkHr = TotalHours(startWorkTime, endWorkTime) - totalBreakHr;
+    const overWorkHr = OverHours(totalWorkHr);
 
-    await addRecordHandler({
-      month: date.getMonth() + 1,
-      date,
+    await updateRecordHandler({
+      id: selectedRecord.id,
       startWorkTime,
       endWorkTime,
       hasBreakTime,
       startBreakTime,
       endBreakTime,
-      imageUri: takenPhoto?.uri ?? '',
+      imageUri: takenPhoto?.uri ?? selectedRecord.imageUri,
+    });
+
+    setSelectedRecord({
+      id: selectedRecord.id,
+      date: selectedRecord.date,
+      totalWorkHours: totalWorkHr,
+      overWorkHours: overWorkHr,
+      startWorkTime,
+      endWorkTime,
+      hasBreakTime,
+      startBreakTime,
+      endBreakTime,
+      imageUri: takenPhoto?.uri ?? selectedRecord.imageUri,
     });
 
     setWarning(undefined);
     navigator.goBack();
   };
+
+  const deleteHandler = async () => {
+    navigator.navigate('Home');
+    let mounted = true;
+
+    await deleteRecordHandler({ id: selectedRecord.id }).then(() => {
+      if (mounted) {
+        setSelectedRecord(null);
+        setOpenModal(false);
+      }
+    });
+
+    return () => (mounted = false);
+  };
+
+  const { year, month, day } = getRecordDetailAsString(selectedRecord);
 
   return (
     <>
@@ -229,27 +307,35 @@ const AddItem = () => {
                 </TouchableOpacity>
               </View>
             }
-            centerComponent={{ text: '新增工時', style: DefaultStyles.heading }}
+            centerComponent={{
+              text: year + '/' + month + '/' + day,
+              style: DefaultStyles.heading,
+            }}
           />
+          {
+            <Overlay
+              isVisible={openModal}
+              onBackdropPress={toggleOverlay}
+              overlayStyle={styles.overlay}
+            >
+              <Text style={styles.confirmDelete}>確認刪除？</Text>
+              <View style={styles.btnGroup}>
+                <Button title="確認" onPress={deleteHandler} />
+                <Button
+                  title="取消"
+                  onPress={() => {
+                    setOpenModal(false);
+                  }}
+                />
+              </View>
+            </Overlay>
+          }
           <ScrollView contentContainerStyle={styles.root}>
             {warning && (
               <View style={styles.container}>
                 <Text style={styles.warning}>* {warning}</Text>
               </View>
             )}
-            <View style={styles.container}>
-              <Text style={{ ...styles.label, ...DefaultStyles.bodyText }}>
-                選擇日期
-              </Text>
-              <DateTimePicker
-                testID="datePicker"
-                value={date}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-                style={styles.datePicker}
-              />
-            </View>
             <View style={styles.container}>
               <Text style={{ ...styles.label, ...DefaultStyles.bodyText }}>
                 工作時間
@@ -311,22 +397,37 @@ const AddItem = () => {
                 />
               </View>
             )}
-            <View style={styles.cameraBtnContainer}>
+            <View style={styles.btnContainer}>
               <TouchableOpacity
                 style={styles.cameraBtn}
                 onPress={openCameraHandler}
               >
                 <Icon type="material" name="add-a-photo" color="white" />
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={toggleOverlay}
+              >
+                <Icon type="material" name="delete" color="black" size={30} />
+              </TouchableOpacity>
             </View>
             <View style={styles.imagePreview}>
               {!takenPhoto ? (
-                <Text style={DefaultStyles.bodyText}>尚未拍攝任何照片</Text>
+                selectedRecord.imageUri === '' ? (
+                  <Text style={DefaultStyles.bodyText}>未拍攝任何照片</Text>
+                ) : (
+                  <Image
+                    style={styles.image}
+                    resizeMode="cover"
+                    defaultSource={require('../assets/image-not-found.png')}
+                    source={{ uri: selectedRecord.imageUri }}
+                  />
+                )
               ) : (
                 <Image
-                  defaultSource={require('../assets/image-not-found.png')}
-                  resizeMode="cover"
                   style={styles.image}
+                  resizeMode="cover"
+                  defaultSource={require('../assets/image-not-found.png')}
                   source={{ uri: takenPhoto.uri }}
                 />
               )}
@@ -336,6 +437,4 @@ const AddItem = () => {
       )}
     </>
   );
-};
-
-export default AddItem;
+});

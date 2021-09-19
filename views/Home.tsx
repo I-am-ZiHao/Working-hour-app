@@ -3,24 +3,23 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Text,
   Button,
   Modal,
   ScrollView,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import Record from '../models/Record';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import MainCard from '../components/MainCard';
 import { Header as HeaderRNE, Icon } from 'react-native-elements';
 import { SelectorItemType } from '../common/type';
 import Selector from '../components/Selector';
-import { WorkingHoursSummation, TotalHours, OverHours } from '../utils/utils';
+import { WorkingHoursSummation } from '../utils/utils';
 import SmallCard from '../components/SmallCard';
 import useCommonStore from '../store/CommonStore';
-import { dbFetchRecord } from '../helpers/db';
+import useRecord from '../helpers/useRecord';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -72,10 +71,11 @@ const styles = StyleSheet.create({
 const Home = () => {
   const navigator = useNavigation();
 
-  const allRecords = useCommonStore().allRecords;
-  const setAllRecords = useCommonStore().setAllRecords;
+  const { allRecords, isLoading, loadRecordHandler } = useRecord();
+
   const selectedMonth = useCommonStore().selectMonth;
   const setSelectedMonth = useCommonStore().setSelectMonth;
+  const setSelectedRecord = useCommonStore().setSelectRecord;
 
   const [openModal, setOpenModal] = React.useState(false);
 
@@ -100,40 +100,17 @@ const Home = () => {
     setOpenModal(false);
   };
 
-  const loadDataFromDB = React.useCallback(async () => {
-    const dbFetchResult = await dbFetchRecord(selectedMonth);
-    setAllRecords(
-      (dbFetchResult as any).rows._array.map((record) => {
-        const startBreakTime = new Date(record.startbreaktime as number);
-        const endBreakTime = new Date(record.endbreaktime as number);
-        const startWorkTime = new Date(record.startworktime as number);
-        const endWorkTime = new Date(record.endworktime as number);
-        const totalBreakHr = TotalHours(startBreakTime, endBreakTime);
-        const totalWorkHr =
-          TotalHours(startWorkTime, endWorkTime) - totalBreakHr;
-        const overWorkHr = OverHours(totalWorkHr);
-        return new Record(
-          record.id,
-          new Date(record.date as number),
-          totalWorkHr,
-          overWorkHr,
-          startWorkTime,
-          endWorkTime,
-          startBreakTime,
-          endBreakTime,
-          record.imageUri
-        );
-      })
-    );
-  }, [selectedMonth]);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadRecordHandler(selectedMonth);
+    }, [selectedMonth])
+  );
 
   React.useEffect(() => {
-    loadDataFromDB();
-  }, [loadDataFromDB]);
-
-  React.useEffect(() => {
-    setTotalWorkingHours(WorkingHoursSummation(allRecords, 'work'));
-    setTotalOverHours(WorkingHoursSummation(allRecords, 'over'));
+    if (allRecords) {
+      setTotalWorkingHours(WorkingHoursSummation(allRecords, 'work'));
+      setTotalOverHours(WorkingHoursSummation(allRecords, 'over'));
+    }
   }, [allRecords]);
 
   return (
@@ -152,7 +129,7 @@ const Home = () => {
                 navigator.navigate('AddItem');
               }}
             >
-              <Icon type="material" name="add" color="white" />
+              <Icon type="material" name="add" color="white" size={30} />
             </TouchableOpacity>
           </View>
         }
@@ -189,19 +166,23 @@ const Home = () => {
           </View>
         </Modal>
         <ScrollView style={styles.listContainer}>
-          {allRecords
-            .sort((a, b) => (a.date < b.date ? 1 : -1))
-            .map((record) => (
-              <SmallCard
-                key={record.id}
-                record={record}
-                onPress={() => {
-                  navigator.navigate('Detail', {
-                    record_id: record.id,
-                  });
-                }}
-              />
-            ))}
+          {isLoading ? (
+            <ActivityIndicator size="large" />
+          ) : (
+            allRecords
+              ?.sort((a, b) => (a.date < b.date ? 1 : -1))
+              .map((record) => (
+                <SmallCard
+                  key={record.id}
+                  record={record}
+                  notFinish={record.totalWorkHours <= 0 ? true : false}
+                  onPress={() => {
+                    setSelectedRecord(record);
+                    navigator.navigate('Detail');
+                  }}
+                />
+              ))
+          )}
         </ScrollView>
       </SafeAreaView>
     </>

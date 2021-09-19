@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Work Hour Record",
-    "description": "An App used to record working hours",
+    "description": "An iOS App used to record working hours",
     "slug": "work-hour-record",
     "version": "1.0.0",
     "orientation": "portrait",

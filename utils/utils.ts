@@ -51,7 +51,7 @@ export const getRecordDetailAsString = (record: Record) => {
 };
 
 export const FirstDateIsOverSecondDate = (first: Date, second: Date) => {
-  if (first.getTime() >= second.getTime()) return true;
+  if (first.getTime() > second.getTime()) return true;
   return false;
 };
 

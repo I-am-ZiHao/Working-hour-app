@@ -3,15 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import Home from '../views/Home';
 import Detail from '../views/Detail';
 import AddItem from '../views/AddItem';
+import { ModifyItem } from '../views/ModifyItem';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-export type RootNavParamList = {
-  Home: undefined;
-  Detail: { record_id: string };
-  AddItem: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootNavParamList>();
+const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
   return (
@@ -24,6 +19,7 @@ const RootNavigator = () => {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Detail" component={Detail} />
         <Stack.Screen name="AddItem" component={AddItem} />
+        <Stack.Screen name="ModifyItem" component={ModifyItem} />
       </Stack.Navigator>
     </NavigationContainer>
   );
