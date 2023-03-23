@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Header as HeaderRNE, Icon } from 'react-native-elements';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
@@ -35,13 +36,13 @@ const styles = StyleSheet.create({
   },
   labelContainer: {
     width: '30%',
-    marginRight: '10%',
+    marginRight: 24,
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
   contentTextContainer: {
-    width: '15%',
-    marginRight: '8%',
+    // width: '15%',
+    marginRight: 16,
     flexDirection: 'row',
   },
   text: {
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
 });
 
 const Detail = () => {
-  const navigator = useNavigation();
+  const navigator = useNavigation<StackNavigationProp<any>>();
 
   const selectedRecord = useCommonStore().selectRecord as Record;
 

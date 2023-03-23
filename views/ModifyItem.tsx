@@ -31,6 +31,7 @@ import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import useRecord from '../helpers/useRecord';
 import { getRecordDetailAsString } from '../utils/utils';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 const styles = StyleSheet.create({
   headerRightText: {
@@ -39,9 +40,10 @@ const styles = StyleSheet.create({
   },
   root: {
     width: '100%',
-    height: '100%',
+    // height: '100%',
     alignItems: 'center',
     marginTop: '5%',
+    paddingBottom: 48,
   },
   container: {
     flexDirection: 'row',
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     width: '90%',
-    height: '60%',
+    height: 400,
     marginBottom: '5%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -131,7 +133,7 @@ const styles = StyleSheet.create({
 });
 
 export const ModifyItem = React.memo(() => {
-  const navigator = useNavigation();
+  const navigator = useNavigation<StackNavigationProp<any>>();
 
   const { updateRecordHandler, deleteRecordHandler } = useRecord();
 

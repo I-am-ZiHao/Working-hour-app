@@ -1,49 +1,41 @@
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import RootNavigator from './navigators/RootNavigator';
 import { dbInit } from './helpers/db';
+import RootNavigator from './navigators/RootNavigator';
 
-const fetchFonts = () => {
-  return Font.loadAsync({
-    'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
-    'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf'),
-  });
-};
+// const fetchFonts = () => {
+//   return Font.loadAsync({
+//     'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
+//     'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf'),
+//   });
+// };
 
 export default function App() {
   const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
-    dbInit()
-      .then(() => {
+    (async () => {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+        await Font.loadAsync({
+          'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf'),
+          'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
+        });
+        await dbInit();
         console.log('successfully initialized db');
-      })
-      .catch((err) => {
+        await SplashScreen.hideAsync();
+        setIsReady(true);
+      } catch (err) {
         console.log('init db failed.');
         throw err;
-      });
+      }
+    })();
   }, []);
 
   if (!isReady) {
-    return (
-      <AppLoading
-        startAsync={fetchFonts}
-        onFinish={() => setIsReady(true)}
-        onError={(err) => console.log(err)}
-      />
-    );
+    return null;
   }
 
   return <RootNavigator />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

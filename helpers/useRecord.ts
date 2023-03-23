@@ -21,32 +21,43 @@ export default function useRecord() {
     setIsLoading(true);
     const dbFetchResult = await dbFetchRecord({ month });
     setAllRecords(
-      (dbFetchResult as any).rows._array.map((record) => {
-        const date = new Date(record.date as number);
-        const startBreakTime = new Date(record.startbreaktime as number);
-        const endBreakTime = new Date(record.endbreaktime as number);
-        const startWorkTime = new Date(record.startworktime as number);
-        const endWorkTime = new Date(record.endworktime as number);
-        const hasBreakTime = record.hasBreakTime === 0 ? false : true;
-        const totalBreakHr = hasBreakTime
-          ? TotalHours(startBreakTime, endBreakTime)
-          : 0;
-        const totalWorkHr =
-          TotalHours(startWorkTime, endWorkTime) - totalBreakHr;
-        const overWorkHr = OverHours(totalWorkHr);
-        return new Record(
-          (record.id as number).toString(),
-          date,
-          totalWorkHr,
-          overWorkHr,
-          startWorkTime,
-          endWorkTime,
-          hasBreakTime,
-          startBreakTime,
-          endBreakTime,
-          record.imageUri
-        );
-      })
+      (dbFetchResult as any).rows._array.map(
+        (record: {
+          date: number;
+          startbreaktime: number;
+          endbreaktime: number;
+          startworktime: number;
+          endworktime: number;
+          hasBreakTime: number;
+          id: number;
+          imageUri: string;
+        }) => {
+          const date = new Date(record.date);
+          const startBreakTime = new Date(record.startbreaktime);
+          const endBreakTime = new Date(record.endbreaktime);
+          const startWorkTime = new Date(record.startworktime);
+          const endWorkTime = new Date(record.endworktime);
+          const hasBreakTime = record.hasBreakTime === 0 ? false : true;
+          const totalBreakHr = hasBreakTime
+            ? TotalHours(startBreakTime, endBreakTime)
+            : 0;
+          const totalWorkHr =
+            TotalHours(startWorkTime, endWorkTime) - totalBreakHr;
+          const overWorkHr = OverHours(totalWorkHr);
+          return new Record(
+            record.id.toString(),
+            date,
+            totalWorkHr,
+            overWorkHr,
+            startWorkTime,
+            endWorkTime,
+            hasBreakTime,
+            startBreakTime,
+            endBreakTime,
+            record.imageUri
+          );
+        }
+      )
     );
     setIsLoading(false);
   };

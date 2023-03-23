@@ -19,6 +19,7 @@ import CameraView from '../components/Camera';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import useRecord from '../helpers/useRecord';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 const styles = StyleSheet.create({
   headerRightText: {
@@ -27,9 +28,10 @@ const styles = StyleSheet.create({
   },
   root: {
     width: '100%',
-    height: '100%',
+    // height: '100%',
     alignItems: 'center',
     marginTop: '5%',
+    paddingBottom: 48,
   },
   container: {
     flexDirection: 'row',
@@ -42,7 +44,7 @@ const styles = StyleSheet.create({
     marginLeft: '7%',
   },
   datePicker: {
-    width: '70%',
+    // width: '70%',
     backgroundColor: 'transparent',
     fontSize: 22,
   },
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     width: '90%',
-    height: '60%',
+    height: 400,
     marginBottom: '5%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -94,7 +96,7 @@ const styles = StyleSheet.create({
 });
 
 const AddItem = () => {
-  const navigator = useNavigation();
+  const navigator = useNavigation<StackNavigationProp<any>>();
 
   const selectedMonth = useCommonStore().selectMonth;
 
@@ -139,7 +141,8 @@ const AddItem = () => {
   };
 
   const verifyPermissions = async () => {
-    const { status: status_camera } = await Camera.requestPermissionsAsync();
+    const { status: status_camera } =
+      await Camera.requestCameraPermissionsAsync();
     const { status: status_mediaLibrary } =
       await MediaLibrary.requestPermissionsAsync();
     if (status_camera !== 'granted' || status_mediaLibrary !== 'granted') {

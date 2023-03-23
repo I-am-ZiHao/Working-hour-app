@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import Colors from '../constants/colors';
 import DefaultStyles from '../constants/default-styles';
 import MainCard from '../components/MainCard';
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     flexDirection: 'row',
     width: '100%',
-    justifyContent: 'space-around',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
     marginVertical: '5%',
     paddingHorizontal: 5,
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
 });
 
 const Home = () => {
-  const navigator = useNavigation();
+  const navigator = useNavigation<StackNavigationProp<any>>();
 
   const { allRecords, isLoading, loadRecordHandler } = useRecord();
 

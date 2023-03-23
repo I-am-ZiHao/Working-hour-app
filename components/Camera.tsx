@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Camera } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import { Icon } from 'react-native-elements';
 
 const styles = StyleSheet.create({
@@ -52,7 +52,7 @@ type CameraViewProps = {
 const CameraView = ({ onTakePicture, onCloseCamera }: CameraViewProps) => {
   let camera: Camera | null;
 
-  const [type, setType] = React.useState(Camera.Constants.Type.back);
+  const [type, setType] = React.useState(CameraType.back);
 
   const photeTakenHandler = async () => {
     if (!camera) return;
@@ -77,9 +77,7 @@ const CameraView = ({ onTakePicture, onCloseCamera }: CameraViewProps) => {
             style={styles.closeBtn}
             onPress={() => {
               setType(
-                type === Camera.Constants.Type.back
-                  ? Camera.Constants.Type.front
-                  : Camera.Constants.Type.back
+                type === CameraType.back ? CameraType.front : CameraType.back
               );
             }}
           >

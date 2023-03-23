@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import Record from '../models/Record';
 
 type State = {
