@@ -8,4 +8,4 @@ https://expo.io/@zi-hao/work-hour-record
 Local dev:
 `yarn install`
 then
-`yarn dev`
+`yarn start`
